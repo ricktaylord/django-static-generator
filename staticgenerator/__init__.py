@@ -3,6 +3,7 @@
 
 """Static file generator for Django."""
 import stat
+import os.path
 
 from django.utils.functional import Promise
 
@@ -175,6 +176,10 @@ class StaticGenerator(object):
         """
         if path.endswith('/'):
             path = '%sindex.html' % path
+        # if no file ext, make the "file" a directory with an index.html for the content.
+        # This handles cases of hierachal pages ( /mapped, /mapped/disasters, /mapped/disasters/json will all work
+        if not(os.path.splitext(path)[1]):
+            path = '%s/index.html' % path
 
         filename = self.fs.join(self.web_root, path.lstrip('/')).encode('utf-8')
         return filename, self.fs.dirname(filename)
