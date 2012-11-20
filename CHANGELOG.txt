@@ -1,3 +1,7 @@
+2012-11-20, v1.0 as django-staticgenerator
+
+    - SuperJared seems inactive. I'm splitting this code and making some significant changes. Supports hierarchies of views and changing of server_name & port
+
 2009-05-09, v1.3.4
 
     - Atomic file writes

@@ -5,8 +5,8 @@ import stat
 
 from mox import Mox
 
-from staticgenerator.staticgenerator import StaticGenerator, StaticGeneratorException, DummyHandler
-import staticgenerator.staticgenerator
+from staticgenerator import StaticGenerator, StaticGeneratorException, DummyHandler
+import staticgenerator
 
 class CustomSettings(object):
     def __init__(self, **kw):
@@ -260,8 +260,8 @@ def test_get_content_from_path():
     mox.ReplayAll()
     
     try:
-        dummy_handler = staticgenerator.staticgenerator.DummyHandler
-        staticgenerator.staticgenerator.DummyHandler = handler_mock
+        dummy_handler = staticgenerator.DummyHandler
+        staticgenerator.DummyHandler = handler_mock
 
         instance = StaticGenerator(http_request=http_request,
                                    model_base=model_base,
@@ -272,7 +272,7 @@ def test_get_content_from_path():
     
         result = instance.get_content_from_path(path_mock)
     finally:
-        staticgenerator.staticgenerator.DummyHandler = dummy_handler
+        staticgenerator.DummyHandler = dummy_handler
     
     assert result == 'foo'
     mox.VerifyAll()
@@ -285,8 +285,9 @@ def test_get_filename_from_path():
     path_mock = '/foo/bar'
     
     fs_mock = mox.CreateMockAnything()
-    fs_mock.join("test_web_root", "foo/bar").AndReturn("test_web_root/foo/bar")
-    fs_mock.dirname("test_web_root/foo/bar").AndReturn("test_web_root/foo")
+    #Handles directories differently, creats and index.html file now
+    fs_mock.join("test_web_root", "foo/bar/index.html").AndReturn("test_web_root/foo/bar/index.html")
+    fs_mock.dirname("test_web_root/foo/bar/index.html").AndReturn("test_web_root/foo")
 
     mox.ReplayAll()
     
@@ -300,7 +301,7 @@ def test_get_filename_from_path():
 
     result = instance.get_filename_from_path(path_mock)
     
-    assert result ==  ('test_web_root/foo/bar', 'test_web_root/foo')
+    assert result ==  ('test_web_root/foo/bar/index.html', 'test_web_root/foo')
     mox.VerifyAll()
     
 def test_get_filename_from_path_when_path_ends_with_slash():
@@ -334,8 +335,8 @@ def test_publish_raises_when_unable_to_create_folder():
     http_request, model_base, manager, model, queryset = get_mocks(mox)
 
     fs_mock = mox.CreateMockAnything()
-    fs_mock.join("test_web_root", "some_path").AndReturn("test_web_root/some_path")
-    fs_mock.dirname("test_web_root/some_path").AndReturn("test_web_root")
+    fs_mock.join("test_web_root", "some_path/index.html").AndReturn("test_web_root/some_path/index.html")
+    fs_mock.dirname("test_web_root/some_path/index.html").AndReturn("test_web_root")
     fs_mock.exists("test_web_root").AndReturn(False)
 
     fs_mock.makedirs("test_web_root").AndRaise(ValueError())
@@ -366,7 +367,7 @@ def test_publish_raises_when_unable_to_create_temp_file():
     http_request, model_base, manager, model, queryset = get_mocks(mox)
 
     fs_mock = mox.CreateMockAnything()
-    fs_mock.join("test_web_root", "some_path").AndReturn("test_web_root/some_path")
+    fs_mock.join("test_web_root", "some_path/index.html").AndReturn("test_web_root/some_path")
     fs_mock.dirname("test_web_root/some_path").AndReturn("test_web_root")
     fs_mock.exists("test_web_root").AndReturn(True)
 
@@ -398,7 +399,7 @@ def test_publish_from_path():
     http_request, model_base, manager, model, queryset = get_mocks(mox)
 
     fs_mock = mox.CreateMockAnything()
-    fs_mock.join("test_web_root", "some_path").AndReturn("test_web_root/some_path")
+    fs_mock.join("test_web_root", "some_path/index.html").AndReturn("test_web_root/some_path")
     fs_mock.dirname("test_web_root/some_path").AndReturn("test_web_root")
     fs_mock.exists("test_web_root").AndReturn(True)
 
@@ -432,7 +433,7 @@ def test_delete_raises_when_unable_to_delete_file():
 
     fs_mock = mox.CreateMockAnything()
 
-    fs_mock.join("test_web_root", "some_path").AndReturn("test_web_root/some_path")
+    fs_mock.join("test_web_root", "some_path/index.html").AndReturn("test_web_root/some_path")
     fs_mock.dirname("test_web_root/some_path").AndReturn("test_web_root")
     fs_mock.exists("test_web_root/some_path").AndReturn(True)
     fs_mock.remove("test_web_root/some_path").AndRaise(ValueError())
@@ -464,7 +465,7 @@ def test_delete_ignores_folder_delete_when_unable_to_delete_folder():
 
     fs_mock = mox.CreateMockAnything()
 
-    fs_mock.join("test_web_root", "some_path").AndReturn("test_web_root/some_path")
+    fs_mock.join("test_web_root", "some_path/index.html").AndReturn("test_web_root/some_path")
     fs_mock.dirname("test_web_root/some_path").AndReturn("test_web_root")
     fs_mock.exists("test_web_root/some_path").AndReturn(True)
     fs_mock.remove("test_web_root/some_path")
@@ -492,7 +493,7 @@ def test_delete_from_path():
     http_request, model_base, manager, model, queryset = get_mocks(mox)
 
     fs_mock = mox.CreateMockAnything()
-    fs_mock.join("test_web_root", "some_path").AndReturn("test_web_root/some_path")
+    fs_mock.join("test_web_root", "some_path/index.html").AndReturn("test_web_root/some_path")
     fs_mock.dirname("test_web_root/some_path").AndReturn("test_web_root")
     fs_mock.exists("test_web_root/some_path").AndReturn(True)
     fs_mock.remove("test_web_root/some_path")
@@ -521,7 +522,7 @@ def test_publish_loops_through_all_resources():
 
     fs_mock = mox.CreateMockAnything()
     f = mox.CreateMockAnything()
-    fs_mock.join('test_web_root', 'some_path_1').AndReturn('test_web_root/some_path_1')
+    fs_mock.join('test_web_root', 'some_path_1/index.html').AndReturn('test_web_root/some_path_1')
     fs_mock.dirname('test_web_root/some_path_1').AndReturn('test_web_root')
     fs_mock.exists("test_web_root").AndReturn(True)
     filename = "some_temp_file"
@@ -531,7 +532,7 @@ def test_publish_loops_through_all_resources():
     fs_mock.chmod(filename, stat.S_IREAD | stat.S_IWRITE | stat.S_IWUSR | stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
     fs_mock.rename('some_temp_file', 'test_web_root/some_path_1')
 
-    fs_mock.join('test_web_root', 'some_path_2').AndReturn('test_web_root/some_path_2')
+    fs_mock.join('test_web_root', 'some_path_2/index.html').AndReturn('test_web_root/some_path_2')
     fs_mock.dirname('test_web_root/some_path_2').AndReturn('test_web_root')
     fs_mock.exists("test_web_root").AndReturn(True)
     filename = "some_temp_file"
@@ -547,7 +548,7 @@ def test_publish_loops_through_all_resources():
 
     try:
         get_content_from_path = StaticGenerator.get_content_from_path
-        StaticGenerator.get_content_from_path = lambda self, path: "some_content"
+        StaticGenerator.get_content_from_path = lambda self, path, sn, sp: "some_content"
         instance = StaticGenerator("some_path_1", "some_path_2",
                                    http_request=http_request,
                                    model_base=model_base,
@@ -568,13 +569,13 @@ def test_delete_loops_through_all_resources():
     http_request, model_base, manager, model, queryset = get_mocks(mox)
 
     fs_mock = mox.CreateMockAnything()
-    fs_mock.join('test_web_root', 'some_path').AndReturn("test_web_root/some_path")
+    fs_mock.join('test_web_root', 'some_path/index.html').AndReturn("test_web_root/some_path")
     fs_mock.dirname("test_web_root/some_path").AndReturn("test_web_root")
     fs_mock.exists("test_web_root/some_path").AndReturn(True)
     fs_mock.remove("test_web_root/some_path")
     fs_mock.rmdir("test_web_root")
 
-    fs_mock.join('test_web_root', 'some_path_2').AndReturn("test_web_root/some_path_2")
+    fs_mock.join('test_web_root', 'some_path_2/index.html').AndReturn("test_web_root/some_path_2")
     fs_mock.dirname('test_web_root/some_path_2').AndReturn("test_web_root")
     fs_mock.exists("test_web_root/some_path_2").AndReturn(True)
     fs_mock.remove("test_web_root/some_path_2")
@@ -638,8 +639,8 @@ def test_bad_request_raises_proper_exception():
     mox.ReplayAll()
 
     try:
-        dummy_handler = staticgenerator.staticgenerator.DummyHandler
-        staticgenerator.staticgenerator.DummyHandler = handler_mock
+        dummy_handler = staticgenerator.DummyHandler
+        staticgenerator.DummyHandler = handler_mock
 
         instance = StaticGenerator(http_request=http_request,
                                    model_base=model_base,
@@ -654,7 +655,7 @@ def test_bad_request_raises_proper_exception():
         mox.VerifyAll()
         return
     finally:
-        staticgenerator.staticgenerator.DummyHandler = dummy_handler
+        staticgenerator.DummyHandler = dummy_handler
 
     assert False, "Shouldn't have gotten this far."
 
@@ -684,8 +685,8 @@ def test_not_found_raises_proper_exception():
     mox.ReplayAll()
 
     try:
-        dummy_handler = staticgenerator.staticgenerator.DummyHandler
-        staticgenerator.staticgenerator.DummyHandler = handler_mock
+        dummy_handler = staticgenerator.DummyHandler
+        staticgenerator.DummyHandler = handler_mock
 
         instance = StaticGenerator(http_request=http_request,
                                    model_base=model_base,
@@ -700,7 +701,7 @@ def test_not_found_raises_proper_exception():
         mox.VerifyAll()
         return
     finally:
-        staticgenerator.staticgenerator.DummyHandler = dummy_handler
+        staticgenerator.DummyHandler = dummy_handler
 
     assert False, "Shouldn't have gotten this far."
 
@@ -726,8 +727,8 @@ def test_request_exception_raises_proper_exception():
     mox.ReplayAll()
 
     try:
-        dummy_handler = staticgenerator.staticgenerator.DummyHandler
-        staticgenerator.staticgenerator.DummyHandler = handler_mock
+        dummy_handler = staticgenerator.DummyHandler
+        staticgenerator.DummyHandler = handler_mock
 
         instance = StaticGenerator(http_request=http_request,
                                    model_base=model_base,
@@ -742,7 +743,7 @@ def test_request_exception_raises_proper_exception():
         mox.VerifyAll()
         return
     finally:
-        staticgenerator.staticgenerator.DummyHandler = dummy_handler
+        staticgenerator.DummyHandler = dummy_handler
 
     assert False, "Shouldn't have gotten this far."
 

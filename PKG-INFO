@@ -1,10 +1,12 @@
 Metadata-Version: 1.0
-Name: staticgenerator
-Version: 1.3.3
+Name: django-staticgenerator
+Version: 1.0
 Summary: StaticGenerator for Django
 Home-page: http://superjared.com/projects/static-generator/
+Author: Mark Redar
+Author-email: mredar@gmail.com
 Author: Jared Kuolt
 Author-email: me@superjared.com
-License: UNKNOWN
-Description: UNKNOWN
+License: MIT
+Description: A simple static generator for Django
 Platform: UNKNOWN

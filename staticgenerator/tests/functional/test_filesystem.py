@@ -5,7 +5,7 @@ import os
 from os.path import abspath, join, dirname, exists
 import tempfile
 
-from staticgenerator.staticgenerator import FileSystem
+from staticgenerator import FileSystem
 
 ROOT_DIR = join(abspath(os.curdir), "test_data")
 

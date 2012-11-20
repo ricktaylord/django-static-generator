@@ -1,12 +1,12 @@
 from distutils.core import setup
 
-version = '1.4.1'
+version = '1.0'
 
-setup(name='staticgenerator',
+setup(name='django-staticgenerator',
       version=version,
       description="StaticGenerator for Django",
-      author="Jared Kuolt",
-      author_email="me@superjared.com",
-      url="http://superjared.com/projects/static-generator/",
+      author="Mark Redar",
+      author_email="mredar@gmail.com",
+      url="https://github.com/mredar/django-staticgenerator",
       packages = ['staticgenerator']
       )
