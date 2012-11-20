@@ -45,11 +45,11 @@ class StaticGenerator(object):
 
         self.resources = self.extract_resources(resources)
         if kw.get('server_name', None):
-            self.server_name = server_name
+            self.server_name = kw.get('server_name')
         else:
             self.server_name = self.get_server_name()
         if kw.get('server_port', None):
-            self.server_port = int(server_port)
+            self.server_port = int(kw.get('server_port'))
         else:
             self.server_port = 80
         try:
