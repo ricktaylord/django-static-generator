@@ -44,6 +44,14 @@ class StaticGenerator(object):
         self.parse_dependencies(kw)
 
         self.resources = self.extract_resources(resources)
+        if kw.get('server_name', None):
+            self.server_name = server_name
+        else:
+            self.server_name = self.get_server_name()
+        if kw.get('server_port', None):
+            self.server_port = int(server_port)
+        else:
+            self.server_port = 80
         try:
             self.web_root = getattr(self.settings, 'WEB_ROOT')
         except AttributeError:
@@ -125,10 +133,6 @@ class StaticGenerator(object):
 
         return extracted
 
-    @property
-    def server_name(self):
-        return self.get_server_name()
-
     def get_server_name(self):
         '''Tries to get the server name.
         First we look in the django settings.
@@ -149,7 +153,7 @@ class StaticGenerator(object):
             print '*** Warning ***: Using "localhost" for domain name. Use django.contrib.sites or set settings.SERVER_NAME to disable this warning.'
             return 'localhost'
 
-    def get_content_from_path(self, path, server_name=None, server_port=80):
+    def get_content_from_path(self, path):
         """
         Imitates a basic http request using DummyHandler to retrieve
         resulting output (HTML, XML, whatever)
@@ -157,8 +161,8 @@ class StaticGenerator(object):
 
         request = self.http_request()
         request.path_info = path
-        request.META.setdefault('SERVER_PORT', server_port)
-        request.META.setdefault('SERVER_NAME', server_name if server_name else self.get_server_name())
+        request.META.setdefault('SERVER_PORT', self.server_port)
+        request.META.setdefault('SERVER_NAME', self.server_name)
 
         handler = DummyHandler()
         try:
@@ -186,14 +190,14 @@ class StaticGenerator(object):
         filename = self.fs.join(self.web_root, path.lstrip('/')).encode('utf-8')
         return filename, self.fs.dirname(filename)
 
-    def publish_from_path(self, path, content=None, server_name=None, server_port=None):
+    def publish_from_path(self, path, content=None):
         """
         Gets filename and content for a path, attempts to create directory if 
         necessary, writes to file.
         """
         filename, directory = self.get_filename_from_path(path)
         if not content:
-            content = self.get_content_from_path(path, server_name, server_port)
+            content = self.get_content_from_path(path)
 
         if not self.fs.exists(directory):
             try:

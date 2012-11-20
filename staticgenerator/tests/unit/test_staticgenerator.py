@@ -548,7 +548,7 @@ def test_publish_loops_through_all_resources():
 
     try:
         get_content_from_path = StaticGenerator.get_content_from_path
-        StaticGenerator.get_content_from_path = lambda self, path, sn, sp: "some_content"
+        StaticGenerator.get_content_from_path = lambda self, path: "some_content"
         instance = StaticGenerator("some_path_1", "some_path_2",
                                    http_request=http_request,
                                    model_base=model_base,
