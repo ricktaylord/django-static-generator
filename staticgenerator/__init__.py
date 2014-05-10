@@ -9,6 +9,8 @@ from django.utils.functional import Promise
 
 from filesystem import FileSystem
 from handlers import DummyHandler
+from django.core.handlers.wsgi import WSGIHandler
+import logging
 
 
 class StaticGeneratorException(Exception):
@@ -116,7 +118,7 @@ class StaticGenerator(object):
 
             # A model instance; requires get_absolute_url method
             if isinstance(resource, self.model):
-                extracted.append(resource.get_absolute_url())
+                extracted.append(resource.get_absolute_url(allow_external=False))
                 continue
 
             # If it's a Model, we get the base Manager
@@ -129,7 +131,7 @@ class StaticGenerator(object):
 
             # Append all paths from obj.get_absolute_url() to list
             if isinstance(resource, self.queryset):
-                extracted += [obj.get_absolute_url() for obj in resource]
+                extracted += [obj.get_absolute_url(allow_external=False) for obj in resource]
 
         return extracted
 
@@ -163,15 +165,21 @@ class StaticGenerator(object):
         request.path_info = path
         request.META.setdefault('SERVER_PORT', self.server_port)
         request.META.setdefault('SERVER_NAME', self.server_name)
+	request.method = "GET"
 
         handler = DummyHandler()
         try:
             response = handler(request)
         except Exception, err:
-            raise StaticGeneratorException("The requested page(\"%s\") raised an exception. Static Generation failed. Error: %s" % (path, str(err)))
+            print "The requested page(\"%s\") raised an exception. Static Generation failed. Error: %s" % (path, str(err))
+            #raise StaticGeneratorException("The requested page(\"%s\") raised an exception. Static Generation failed. Error: %s" % (path, str(err)))
+            return None
 
         if int(response.status_code) != 200:
-            raise StaticGeneratorException("The requested page(\"%s\") returned http code %d. Static Generation failed." % (path, int(response.status_code)))
+            print "FAIL"
+            print "The requested page(\"%s\") returned http code %d. Static Generation failed." % (path, int(response.status_code))
+            return response.content   
+            # raise StaticGeneratorException("The requested page(\"%s\") returned http code %d. Static Generation failed." % (path, int(response.status_code)))
 
         return response.content
 
@@ -203,7 +211,8 @@ class StaticGenerator(object):
             try:
                 self.fs.makedirs(directory)
             except:
-                raise StaticGeneratorException('Could not create the directory: %s' % directory)
+		logging.debug('Could not create the directory: %s' % directory)
+                #raise StaticGeneratorException('Could not create the directory: %s' % directory)
 
         try:
             f, tmpname = self.fs.tempfile(directory=directory)
@@ -212,7 +221,8 @@ class StaticGenerator(object):
             self.fs.chmod(tmpname, stat.S_IREAD | stat.S_IWRITE | stat.S_IWUSR | stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
             self.fs.rename(tmpname, filename)
         except:
-            raise StaticGeneratorException('Could not create the file: %s' % filename)
+            logging.debug('Could not create the file: %s' % filename)
+            #raise StaticGeneratorException('Could not create the file: %s' % filename)
 
     def delete_from_path(self, path):
         """Deletes file, attempts to delete directory"""
