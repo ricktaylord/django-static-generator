@@ -166,6 +166,7 @@ class StaticGenerator(object):
         request.META.setdefault('SERVER_PORT', self.server_port)
         request.META.setdefault('SERVER_NAME', self.server_name)
 	request.method = "GET"
+	request.staticgenerator = True
 
         handler = DummyHandler()
         try:
@@ -221,6 +222,7 @@ class StaticGenerator(object):
             self.fs.chmod(tmpname, stat.S_IREAD | stat.S_IWRITE | stat.S_IWUSR | stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
             self.fs.rename(tmpname, filename)
         except:
+            print "Could not create the file: %s" % filename
             logging.debug('Could not create the file: %s' % filename)
             #raise StaticGeneratorException('Could not create the file: %s' % filename)
 
