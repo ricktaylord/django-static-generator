@@ -152,7 +152,7 @@ class StaticGenerator(object):
                 self.site = Site
             return self.site.objects.get_current().domain
         except:
-            print '*** Warning ***: Using "localhost" for domain name. Use django.contrib.sites or set settings.SERVER_NAME to disable this warning.'
+            #print '*** Warning ***: Using "localhost" for domain name. Use django.contrib.sites or set settings.SERVER_NAME to disable this warning.'
             return 'localhost'
 
     def get_content_from_path(self, path):
@@ -172,13 +172,13 @@ class StaticGenerator(object):
         try:
             response = handler(request)
         except Exception, err:
-            print "The requested page(\"%s\") raised an exception. Static Generation failed. Error: %s" % (path, str(err))
+            #print "The requested page(\"%s\") raised an exception. Static Generation failed. Error: %s" % (path, str(err))
             #raise StaticGeneratorException("The requested page(\"%s\") raised an exception. Static Generation failed. Error: %s" % (path, str(err)))
             return None
 
         if int(response.status_code) != 200:
-            print "FAIL"
-            print "The requested page(\"%s\") returned http code %d. Static Generation failed." % (path, int(response.status_code))
+            #print "FAIL"
+            #print "The requested page(\"%s\") returned http code %d. Static Generation failed." % (path, int(response.status_code))
             return response.content   
             # raise StaticGeneratorException("The requested page(\"%s\") returned http code %d. Static Generation failed." % (path, int(response.status_code)))
 
@@ -222,7 +222,7 @@ class StaticGenerator(object):
             self.fs.chmod(tmpname, stat.S_IREAD | stat.S_IWRITE | stat.S_IWUSR | stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
             self.fs.rename(tmpname, filename)
         except:
-            print "Could not create the file: %s" % filename
+            #print "Could not create the file: %s" % filename
             logging.debug('Could not create the file: %s' % filename)
             #raise StaticGeneratorException('Could not create the file: %s' % filename)
 
