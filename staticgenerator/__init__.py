@@ -211,21 +211,23 @@ class StaticGenerator(object):
         if not self.fs.exists(directory):
             try:
                 self.fs.makedirs(directory)
+                self.fs.chown_group(directory, "webpublish")
             except:
-		logging.debug('Could not create the directory: %s' % directory)
+                print "Could not create the directory: %s" % directory
+                logging.debug('Could not create the directory: %s' % directory)
                 #raise StaticGeneratorException('Could not create the directory: %s' % directory)
 
         try:
             f, tmpname = self.fs.tempfile(directory=directory)
             self.fs.write(f, content)
             self.fs.close(f)
-            self.fs.chmod(tmpname, stat.S_IREAD | stat.S_IWRITE | stat.S_IWUSR | stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
             self.fs.rename(tmpname, filename)
         except:
-            #print "Could not create the file: %s" % filename
+            print "Could not create the file: %s" % filename
             logging.debug('Could not create the file: %s' % filename)
             #raise StaticGeneratorException('Could not create the file: %s' % filename)
-
+        self.fs.chmod(filename, stat.S_IREAD | stat.S_IWRITE | stat.S_IWUSR | stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH | stat.S_IWGRP)
+        self.fs.chown_group(filename, "webpublish")
     def delete_from_path(self, path):
         """Deletes file, attempts to delete directory"""
         filename, directory = self.get_filename_from_path(path)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
-import os
+import os, grp
 import tempfile
 
 class FileSystem(object):
@@ -10,6 +10,10 @@ class FileSystem(object):
 
     def makedirs(self, path):
         os.makedirs(path)
+        
+    def chown_group(self, path, groupname):
+        gid = grp.getgrnam(groupname).gr_gid
+        os.chown(path, -1, gid)
 
     def tempfile(self, directory):
         return tempfile.mkstemp(dir=directory)
