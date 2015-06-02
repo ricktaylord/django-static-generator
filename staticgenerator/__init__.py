@@ -11,7 +11,7 @@ from filesystem import FileSystem
 from handlers import DummyHandler
 from django.core.handlers.wsgi import WSGIHandler
 import logging
-
+import urllib
 
 class StaticGeneratorException(Exception):
     pass
@@ -162,7 +162,7 @@ class StaticGenerator(object):
         """
 
         request = self.http_request()
-        request.path_info = path
+        request.path_info = urllib.unquote(path).decode('utf8')
         request.META.setdefault('SERVER_PORT', self.server_port)
         request.META.setdefault('SERVER_NAME', self.server_name)
 	request.method = "GET"
@@ -181,7 +181,7 @@ class StaticGenerator(object):
             #print "The requested page(\"%s\") returned http code %d. Static Generation failed." % (path, int(response.status_code))
             return response.content   
             # raise StaticGeneratorException("The requested page(\"%s\") returned http code %d. Static Generation failed." % (path, int(response.status_code)))
-
+        #print "The requested page(\"%s\") was generated." % path
         return response.content
 
     def get_filename_from_path(self, path):
@@ -190,11 +190,11 @@ class StaticGenerator(object):
         Creates index.html for path if necessary
         """
         if path.endswith('/'):
-            path = '%sindex.html' % path
+            path = '%sindex.html' % urllib.unquote(path).decode('utf8')
         # if no file ext, make the "file" a directory with an index.html for the content.
         # This handles cases of hierachal pages ( /mapped, /mapped/disasters, /mapped/disasters/json will all work
         if not(os.path.splitext(path)[1]):
-            path = '%s/index.html' % path
+            path = '%s/index.html' % urllib.unquote(path).decode('utf8')
 
         filename = self.fs.join(self.web_root, path.lstrip('/')).encode('utf-8')
         return filename, self.fs.dirname(filename)
