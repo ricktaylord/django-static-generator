@@ -3,7 +3,7 @@
 
 from django.core.handlers.base import BaseHandler
 from django.middleware.csrf import CsrfViewMiddleware
-from debug_toolbar.middleware import DebugToolbarMiddleware
+#from debug_toolbar.middleware import DebugToolbarMiddleware
 import logging
 
 class DummyHandler(BaseHandler):
@@ -20,5 +20,5 @@ class DummyHandler(BaseHandler):
             response = middleware_method(request, response)
         return response
     def _csrf_filter(self,middleware):
-        return [ x for x in middleware if x.im_class not in ( CsrfViewMiddleware, DebugToolbarMiddleware ) ]
+        return [ x for x in middleware if x.im_class not in ( CsrfViewMiddleware, ) ]
   
